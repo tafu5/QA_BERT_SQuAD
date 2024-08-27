@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  squad:
+    image: tensorflow/serving
+    ports:
+      - 9501:8501  # HTML port
+    volumes:
+      - C:\Users\User\Desktop\valen\NLP\bert_squad_deploy\Model\tf2\tensorflow:/models/squad
+    environment:
+      - MODEL_NAME=squad
+    deploy:        
+      replicas: 4  # Initialize 4 containers 
+
+  visualizer:    # Create the container visualizer
+    image: dockersamples/visualizer   
+    ports:
+      - 9001:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:    
+      placement:
+        constraints: [node.role == manager]
+  
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9002:9090
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 9003:3000
+    links:
+      - prometheus:prometheus
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
